@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+      }
+      .login-container {
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        width: 350px;
+        text-align: center;
+      }
+      h2 {
+        margin-bottom: 20px;
+        color: #333;
+      }
+      label {
+        display: block;
+        text-align: left;
+        margin-bottom: 5px;
+        color: #555;
+      }
+      input[type="text"],
+      input[type="password"] {
+        width: 80%;
+        padding: 10px;
+        margin-bottom: 15px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+      }
+      button {
+        background-color: #007bff;
+        color: #fff;
+        padding: 10px 15px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        width: 100%;
+      }
+      button:hover {
+        background-color: #0056b3;
+      }
+      #token {
+        display: none;
+        margin-top: 20px;
+        text-align: left;
+      }
+      #jwt-token {
+        background-color: #f0f0f0;
+        padding: 10px;
+        border-radius: 4px;
+        display: inline-block;
+        width: 80%;
+        margin-bottom: 10px;
+        word-break: break-all;
+      }
+      #continue-btn {
+        margin-top: 10px;
+      }
+      .copy-btn {
+        background-color: #28a745;
+        margin-top: 10px;
+      }
+      .copy-btn:hover {
+        background-color: #218838;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="login-container">
+      <h2>Login</h2>
+      <form id="login-form">
+        <label for="email">Username:</label>
+        <input type="text" id="email" name="email" required />
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required />
+        <button type="submit">Login</button>
+      </form>
+      <div id="token">
+        <strong>Your JWT Token:</strong>
+        <div id="jwt-token"></div>
+        <button id="copy-btn" class="copy-btn">Copy Token</button>
+        <button id="continue-btn">Continue to Swagger</button>
+      </div>
+    </div>
+
+    <script>
+      document
+        .getElementById("login-form")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const email = document.getElementById("email").value;
+          const password = document.getElementById("password").value;
+
+          const response = await fetch("/api/auth/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password }),
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            document.getElementById("token").style.display = "block";
+            document.getElementById("jwt-token").textContent = data.token;
+            // Store the token in localStorage
+            localStorage.setItem("jwt", data.token);
+
+            // Copy token to clipboard
+            document
+              .getElementById("copy-btn")
+              .addEventListener("click", () => {
+                const tokenText =
+                  document.getElementById("jwt-token").textContent;
+                navigator.clipboard.writeText(tokenText).then(() => {});
+              });
+
+            // Redirect to Swagger on button click
+            document
+              .getElementById("continue-btn")
+              .addEventListener("click", () => {
+                window.location.href = "/swagger?token=" + data.token;
+              });
+          } else {
+            alert("Login failed. Please try again.");
+          }
+        });
+    </script>
+  </body>
+</html>
